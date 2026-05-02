@@ -800,6 +800,12 @@ function importLocalFile() {
         if (!data.chapters || !Array.isArray(data.chapters)) {
           return showToast('Fichier invalide — aucun chapitre trouvé');
         }
+
+        // 1. Vider l'éditeur D'ABORD pour que syncEditorToState ne pollue rien
+        document.getElementById('chapter-title-input').value = '';
+        document.getElementById('editor-content').innerHTML  = '';
+
+        // 2. Charger le state
         STATE.book            = data.book  || STATE.book;
         STATE.chapters        = data.chapters;
         STATE.lang            = data.lang  || 'fr';
@@ -807,14 +813,17 @@ function importLocalFile() {
         STATE.activeChapterId = STATE.chapters[0]?.id || 1;
         STATE.nextChapterId   = Math.max(...STATE.chapters.map(c => c.id), 0) + 1;
         STATE.currentPage     = 0;
+
         const langSel = document.getElementById('lang-select');
         if (langSel) langSel.value = STATE.lang;
         document.getElementById('book-title-display').textContent = STATE.book.title || 'Sans titre';
-        renderChapterList();
-        STATE.activeChapterId = STATE.chapters[0]?.id || 1;
+
+        // 3. Alimenter l'éditeur directement SANS passer par loadChapter
         const firstCh = STATE.chapters[0];
-        document.getElementById('chapter-title-input').value = firstCh?.title || '';
+        document.getElementById('chapter-title-input').value = firstCh?.title   || '';
         document.getElementById('editor-content').innerHTML  = firstCh?.content || '';
+
+        renderChapterList();
         updatePreview();
         updateWordCount();
         markClean();
