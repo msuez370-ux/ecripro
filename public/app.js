@@ -811,7 +811,12 @@ function importLocalFile() {
         if (langSel) langSel.value = STATE.lang;
         document.getElementById('book-title-display').textContent = STATE.book.title || 'Sans titre';
         renderChapterList();
-        loadChapter(STATE.activeChapterId);
+        STATE.activeChapterId = STATE.chapters[0]?.id || 1;
+        const firstCh = STATE.chapters[0];
+        document.getElementById('chapter-title-input').value = firstCh?.title || '';
+        document.getElementById('editor-content').innerHTML  = firstCh?.content || '';
+        updatePreview();
+        updateWordCount();
         markClean();
         showToast(`✓ "${STATE.book.title}" chargé — ${STATE.chapters.length} chapitres`);
       } catch (err) {
