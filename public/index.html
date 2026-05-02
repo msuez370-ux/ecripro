@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ÉcriPro</title>
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══════════════════════════════════════════════════════════ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="logo">ÉcriPro</span>
+    <div class="topbar-sep"></div>
+    <div class="view-tabs">
+      <button class="vt active" onclick="setView('split',this)">Éditeur</button>
+      <button class="vt" onclick="setView('focus',this)">Focus</button>
+      <button class="vt" onclick="setView('preview',this)">Aperçu</button>
+    </div>
+  </div>
+  <div class="topbar-center">
+    <span class="book-title-display" id="book-title-display">Sans titre</span>
+    <span class="unsaved-dot" id="unsaved-dot">●</span>
+  </div>
+  <div class="topbar-right">
+    <button class="tb-action" onclick="importLocalFile()">📥 Importer</button>
+    <button class="tb-action" onclick="openSavesModal()">📂 Bibliothèque</button>
+    <button class="tb-action" onclick="saveBook()">💾 Sauvegarder</button>
+    <button class="tb-action accent" onclick="triggerExportEpub()">📤 EPUB / KDP</button>
+    <div class="topbar-sep"></div>
+    <button class="tb-icon" id="btn-ai" onclick="toggleAI()" title="Assistant IA">✦</button>
+  </div>
+</div>
+
+<!-- ═══ WORKSPACE ══════════════════════════════════════════════════════════ -->
+<div class="workspace" id="workspace">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-section">Chapitres</div>
+      <button class="sidebar-add-btn" onclick="addChapter()">+</button>
+    </div>
+    <div class="chapter-list" id="chapter-list"></div>
+    <div class="sidebar-meta">
+      <div class="meta-row">
+        <span class="meta-label">Mots</span>
+        <span class="meta-val" id="meta-words-total">0</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Pages Kindle</span>
+        <span class="meta-val" id="meta-pages">0</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Chapitres</span>
+        <span class="meta-val" id="meta-chapters">0</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        <span class="progress-label" id="progress-label">0 / 20 000 mots</span>
+      </div>
+      <div class="lang-row">
+        <span class="meta-label">Langue</span>
+        <select id="lang-select" class="lang-sel" onchange="changeLang(this.value)">
+          <option value="fr">🇫🇷 Français</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="es">🇪🇸 Español</option>
+          <option value="de">🇩🇪 Deutsch</option>
+          <option value="pt">🇧🇷 Português</option>
+        </select>
+      </div>
+      <button class="book-settings-btn" onclick="openBookSettings()">⚙ Infos du livre</button>
+    </div>
+  </div>
+
+  <!-- ── EDITOR PANE ── -->
+  <div class="editor-pane" id="editor-pane">
+    <div class="editor-toolbar">
+      <div class="tb-group">
+        <button class="tb-btn" onclick="execFmt('bold')"><b>G</b></button>
+        <button class="tb-btn" onclick="execFmt('italic')"><i>I</i></button>
+        <button class="tb-btn" onclick="execFmt('underline')"><u>S</u></button>
+        <button class="tb-btn" onclick="execFmt('strikeThrough')"><s>S</s></button>
+      </div>
+      <div class="tb-sep"></div>
+      <div class="tb-group">
+        <button class="tb-btn" onclick="insertBlock('h1')">H1</button>
+        <button class="tb-btn" onclick="insertBlock('h2')">H2</button>
+        <button class="tb-btn" onclick="insertBlock('h3')">H3</button>
+        <button class="tb-btn" onclick="insertBlock('blockquote')">❝</button>
+      </div>
+      <div class="tb-sep"></div>
+      <div class="tb-group">
+        <button class="tb-btn" onclick="execFmt('insertUnorderedList')">≡</button>
+        <button class="tb-btn" onclick="execFmt('insertOrderedList')">1.</button>
+        <button class="tb-btn" onclick="insertPageBreak()" title="Saut de page (Ctrl+Entrée)">⊞ Page</button>
+      </div>
+      <div class="tb-sep"></div>
+      <div class="tb-group">
+        <select class="tb-select" onchange="changeFontSize(this.value)">
+          <option value="13">13</option><option value="14">14</option>
+          <option value="15" selected>15</option><option value="16">16</option>
+          <option value="18">18</option>
+        </select>
+        <select class="tb-select" onchange="changeFontFamily(this.value)">
+          <option value="'DM Sans',sans-serif">DM Sans</option>
+          <option value="Georgia,serif">Georgia</option>
+          <option value="'Playfair Display',serif">Playfair</option>
+          <option value="'JetBrains Mono',monospace">Mono</option>
+        </select>
+      </div>
+      <div class="tb-sep"></div>
+      <div class="tb-group">
+        <button class="tb-btn spell-btn" id="spell-btn" onclick="runSpellCheck()">abc✓</button>
+        <button class="tb-btn" onclick="toggleFindBar()">🔍</button>
+      </div>
+      <div class="tb-spacer"></div>
+      <span class="word-count" id="word-count-editor">0 mots</span>
+    </div>
+
+    <!-- Find bar -->
+    <div class="find-bar" id="find-bar" style="display:none;">
+      <input type="text" id="find-input" placeholder="Rechercher…" oninput="doFind()"/>
+      <input type="text" id="replace-input" placeholder="Remplacer par…"/>
+      <button onclick="doReplace()">Remplacer</button>
+      <button onclick="doReplaceAll()">Tout remplacer</button>
+      <span id="find-count"></span>
+      <button onclick="closeFindBar()">✕</button>
+    </div>
+
+    <div class="editor-scroll" id="editor-scroll">
+      <div class="editor-paper">
+        <input type="text" class="chapter-title-input" id="chapter-title-input"
+               placeholder="Titre du chapitre…" oninput="onTitleChange()"/>
+        <div class="editor-content" id="editor-content"
+             contenteditable="true" spellcheck="false"
+             data-placeholder="Commencez à écrire…"
+             oninput="onContentChange()"
+             onkeydown="onEditorKeydown(event)"></div>
+      </div>
+    </div>
+
+    <!-- Spell panel -->
+    <div class="spell-panel" id="spell-panel" style="display:none;">
+      <div class="spell-panel-header">
+        <span id="spell-count-label">Vérification…</span>
+        <button onclick="closeSpellPanel()">✕</button>
+      </div>
+      <div class="spell-list" id="spell-list"></div>
+    </div>
+  </div>
+
+  <!-- ── PREVIEW PANE ── -->
+  <div class="preview-pane" id="preview-pane">
+    <div class="preview-header">
+      <span class="preview-label">Aperçu</span>
+      <div class="pv-toggle">
+        <button class="pv-btn active" onclick="setPvMode('kindle',this)">Kindle</button>
+        <button class="pv-btn" onclick="setPvMode('a5',this)">A5</button>
+        <button class="pv-btn" onclick="setPvMode('web',this)">Web</button>
+      </div>
+    </div>
+    <div class="preview-scroll">
+      <div id="pv-kindle" class="pv-mode">
+        <div class="kindle-device">
+          <div class="kindle-bezel">
+            <div class="kindle-screen">
+              <div class="kindle-chapter-title" id="kv-title"></div>
+              <div class="kindle-body" id="kv-body"></div>
+              <div class="kindle-footer"><span id="kv-page">1 / 1</span></div>
+            </div>
+          </div>
+          <div class="kindle-chin">
+            <div class="kindle-btn-left"></div>
+            <div class="kindle-home-btn"></div>
+            <div class="kindle-btn-right"></div>
+          </div>
+        </div>
+        <div class="page-nav">
+          <button class="page-nav-btn" onclick="prevPage()">‹ Préc.</button>
+          <span id="page-nav-label">1 / 1</span>
+          <button class="page-nav-btn" onclick="nextPage()">Suiv. ›</button>
+        </div>
+        <div class="kindle-info">Format KDP · ~280 mots/page</div>
+      </div>
+      <div id="pv-a5" class="pv-mode" style="display:none;">
+        <div class="a5-page">
+          <div class="a5-header" id="a5-header"></div>
+          <div class="a5-body" id="a5-body"></div>
+          <div class="a5-footer"><span id="a5-page-num">1</span></div>
+        </div>
+        <div class="kindle-info">Format A5 — impression</div>
+      </div>
+      <div id="pv-web" class="pv-mode" style="display:none;">
+        <div class="web-preview" id="web-preview"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AI PANEL ── -->
+  <div class="ai-panel" id="ai-panel">
+    <div class="ai-header">
+      <div class="ai-dot"></div>
+      <span class="ai-panel-title">Assistant IA</span>
+      <button class="ai-close-btn" onclick="toggleAI()">✕</button>
+    </div>
+    <div class="ai-quick-actions">
+      <button class="ai-qa" onclick="aiQuick('Améliore ce paragraphe en gardant le ton de l\'auteur')">✨ Améliorer</button>
+      <button class="ai-qa" onclick="aiQuick('Corrige toutes les fautes d\'orthographe et de grammaire')">abc✓ Corriger</button>
+      <button class="ai-qa" onclick="aiQuick('Résume ce chapitre en 3-5 phrases')">📝 Résumer</button>
+      <button class="ai-qa" onclick="aiQuick('Donne-moi 5 idées pour développer ce chapitre')">💡 Idées</button>
+      <button class="ai-qa" onclick="aiQuick('Explique le sens et l\'étymologie du mot sélectionné')">📖 Définir</button>
+      <button class="ai-qa" onclick="aiQuick('Suggère un titre accrocheur pour ce chapitre')">🏷️ Titre</button>
+      <button class="ai-qa" onclick="aiQuick('Analyse le style d\'écriture et donne des conseils')">🎯 Style</button>
+      <button class="ai-qa" onclick="aiQuick('Génère une description de couverture Kindle pour ce livre')">📚 KDP</button>
+    </div>
+    <div class="ai-messages" id="ai-messages">
+      <div class="ai-msg bot">
+        <div class="ai-msg-content">Bonjour ! Je suis votre assistant d'écriture.<br><br>
+        Sélectionnez du texte dans l'éditeur avant de me poser une question, et je travaillerai directement sur votre contenu.</div>
+      </div>
+    </div>
+    <div class="ai-typing" id="ai-typing"><span></span><span></span><span></span></div>
+    <div class="ai-input-row">
+      <textarea class="ai-textarea" id="ai-textarea" placeholder="Posez une question…" rows="2"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}"></textarea>
+      <button class="ai-send" onclick="sendAI()">↑</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══════════════════════════════════════════════════════════ -->
+
+<!-- Bibliothèque -->
+<button class="modal-btn secondary" onclick="newBook()">+ Nouveau livre</button>
+<button class="modal-btn" onclick="document.getElementById('import-file').click()">📂 Importer .ecripro</button>
+<input type="file" id="import-file" accept=".ecripro,.json" style="display:none" onchange="importBook(event)"><div class="modal-overlay" id="modal-saves">
+  <div class="modal">
+    <h3>📚 Bibliothèque</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:14px;">Livres sauvegardés sur le serveur</p>
+    <div id="saves-list" style="max-height:280px;overflow-y:auto;"></div>
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeModal('modal-saves')">Fermer</button>
+      <<button class="modal-btn secondary" onclick="newBook()">+ Nouveau livre</button>
+<button class="modal-btn" onclick="document.getElementById('import-file').click()">📂 Importer .ecripro</button>
+<input type="file" id="import-file" accept=".ecripro,.json" style="display:none" onchange="importBook(event)">
+    </div>
+  </div>
+</div>
+
+<!-- Infos du livre -->
+<div class="modal-overlay" id="modal-book-settings">
+  <div class="modal">
+    <h3>Informations du livre</h3>
+    <label>Titre du livre</label>
+    <input type="text" id="book-meta-title" placeholder="Mon ebook"/>
+    <label>Auteur</label>
+    <input type="text" id="book-meta-author" placeholder="Prénom Nom"/>
+    <label>Sous-titre (optionnel)</label>
+    <input type="text" id="book-meta-subtitle" placeholder="Sous-titre…"/>
+    <label>Description (Amazon KDP)</label>
+    <textarea id="book-meta-desc" rows="4" placeholder="Description pour la page Amazon…"></textarea>
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeModal('modal-book-settings')">Annuler</button>
+      <button class="modal-btn" onclick="saveBookMeta()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nouveau chapitre -->
+<div class="modal-overlay" id="modal-add-chapter">
+  <div class="modal modal-sm">
+    <h3>Nouveau chapitre</h3>
+    <input type="text" id="new-chapter-name" placeholder="ex: Chapitre 2 — Le tournant"/>
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeModal('modal-add-chapter')">Annuler</button>
+      <button class="modal-btn" onclick="confirmAddChapter()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export EPUB -->
+<div class="modal-overlay" id="modal-export">
+  <div class="modal">
+    <h3>📤 Exporter pour Amazon KDP</h3>
+    <div class="export-info">
+      <ul>
+        <li>✓ EPUB 3.0 compatible Amazon KDP</li>
+        <li>✓ Page de couverture + table des matières</li>
+        <li>✓ Sauts de page entre chapitres</li>
+        <li>✓ CSS optimisé Kindle</li>
+        <li>✓ Métadonnées Dublin Core</li>
+      </ul>
+    </div>
+    <label>Titre</label>
+    <input type="text" id="exp-title"/>
+    <label>Auteur</label>
+    <input type="text" id="exp-author"/>
+    <label>Langue</label>
+    <select id="exp-lang">
+      <option value="fr">Français</option>
+      <option value="en">English</option>
+      <option value="es">Español</option>
+      <option value="de">Deutsch</option>
+    </select>
+    <label>Description</label>
+    <textarea id="exp-desc" rows="3" placeholder="Description de votre livre…"></textarea>
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeModal('modal-export')">Annuler</button>
+      <button class="modal-btn" onclick="doExportEpub()">Télécharger EPUB</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="epub-builder.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
